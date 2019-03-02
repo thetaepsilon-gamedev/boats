@@ -1,3 +1,8 @@
+local mn = "boats"
+assert(minetest.get_current_modname() == mn,
+	"This mod must be named boats to override the MTG one.")
+
+
 --
 -- Helper functions
 --
@@ -128,11 +133,8 @@ end
 
 
 -- boat velocity settings
-local _b = {}
-_b.speed_max = 15
-_b.speed_step = 0.2
-_b.brake = 0.01
-_b.rotate_speed_base = 0.03
+local mp = minetest.get_modpath(mn)
+local _b = dofile(mp.."/cfg.lua")
 
 function boat.on_step(self, dtime)
 	self.v = get_v(self.object:getvelocity()) * get_sign(self.v)
