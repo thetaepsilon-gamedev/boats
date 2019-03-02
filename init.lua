@@ -127,27 +127,36 @@ function boat.on_punch(self, puncher)
 end
 
 
+-- boat velocity settings
+local _b = {}
+_b.speed_max = 15
+_b.speed_step = 0.2
+_b.brake = 0.01
+_b.rotate_speed_base = 0.03
+
 function boat.on_step(self, dtime)
 	self.v = get_v(self.object:getvelocity()) * get_sign(self.v)
 	if self.driver then
 		local ctrl = self.driver:get_player_control()
 		local yaw = self.object:getyaw()
+		local step = _b.speed_step
 		if ctrl.up then
-			self.v = self.v + 0.1
+			self.v = self.v + step
 		elseif ctrl.down then
-			self.v = self.v - 0.1
+			self.v = self.v - step
 		end
+		local rot = _b.rotate_speed_base
 		if ctrl.left then
 			if self.v < 0 then
-				self.object:setyaw(yaw - (1 + dtime) * 0.03)
+				self.object:setyaw(yaw - (1 + dtime) * rot)
 			else
-				self.object:setyaw(yaw + (1 + dtime) * 0.03)
+				self.object:setyaw(yaw + (1 + dtime) * rot)
 			end
 		elseif ctrl.right then
 			if self.v < 0 then
-				self.object:setyaw(yaw + (1 + dtime) * 0.03)
+				self.object:setyaw(yaw + (1 + dtime) * rot)
 			else
-				self.object:setyaw(yaw - (1 + dtime) * 0.03)
+				self.object:setyaw(yaw - (1 + dtime) * rot)
 			end
 		end
 	end
@@ -157,14 +166,17 @@ function boat.on_step(self, dtime)
 		return
 	end
 	local s = get_sign(self.v)
-	self.v = self.v - 0.02 * s
+	local brake = _b.brake
+	local v = self.v
+	self.v = v - (brake * v)
 	if s ~= get_sign(self.v) then
 		self.object:setvelocity({x = 0, y = 0, z = 0})
 		self.v = 0
 		return
 	end
-	if math.abs(self.v) > 5 then
-		self.v = 5 * get_sign(self.v)
+	local max = _b.speed_max
+	if math.abs(self.v) > max then
+		self.v = max * get_sign(self.v)
 	end
 
 	local p = self.object:getpos()
@@ -273,3 +285,8 @@ minetest.register_craft({
 	recipe = "boats:boat",
 	burntime = 20,
 })
+
+
+
+boats = _b
+
